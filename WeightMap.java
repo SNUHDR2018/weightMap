@@ -37,7 +37,39 @@ public class WeightMap {
 		}
 		
 	}
-	BufferedImage copyImage(BufferedImage bi) {
+	
+	private double returnColorValue(double[][] grayScale, int width, int height, int x, int y) {
+		if(x<0)
+			x=x+1;
+		if(y<0)
+			y=y+1;
+		if(x>width-1)
+			x=x-1;
+		if(y>height-1)
+			y=y-1;
+		return grayScale[y][x];
+	}
+	
+	private double[][] measureContrast(BufferedImage image) {
+		double[][] grayScale = createGrayscaleImage(image);
+		//WritableRaster raster = grayScale.getRaster();
+		int width = image.getWidth();
+		int height = image.getHeight();
+		double copy[][] = new double[height][width];
+		double sum=0;
+		 //3*3 Laplacian filter (0, 1, 0), (1, -4, 1), (0, 1, 0)
+		for(int y=0;y<height;y++)
+			for(int x=0;x<width;x++) {
+				sum = (0*(returnColorValue(grayScale, width, height, x-1,y-1))) + (1*(returnColorValue(grayScale, width, height, x, y-1))) + (0*(returnColorValue(grayScale, width, height, x+1, y-1)))
+						+ (1*(returnColorValue(grayScale, width, height, x-1, y))) + (-4*(returnColorValue(grayScale, width, height, x,y))) + (1*(returnColorValue(grayScale, width, height, x+1, y))) +
+						(0*(returnColorValue(grayScale, width, height, x-1, y+1))) + (1*(returnColorValue(grayScale, width, height, x, y+1))) + (0*(returnColorValue(grayScale, width, height, x+1, y+1)));				
+				copy[y][x] = sum;
+			}
+		return copy;
+		
+	}
+	
+	private BufferedImage copyImage(BufferedImage bi) {
 		 ColorModel cm = bi.getColorModel();
 		 boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
 		 WritableRaster raster = bi.copyData(null);
@@ -99,37 +131,6 @@ public class WeightMap {
 				//copy.setRGB(x,y,(int) (r*g*b));
 			}
 		return copy;
-	}
-
-	private double returnColorValue(double[][] grayScale, int width, int height, int x, int y) {
-		if(x<0)
-			x=x+1;
-		if(y<0)
-			y=y+1;
-		if(x>width-1)
-			x=x-1;
-		if(y>height-1)
-			y=y-1;
-		return grayScale[y][x];
-	}
-	
-	private double[][] measureContrast(BufferedImage image) {
-		double[][] grayScale = createGrayscaleImage(image);
-		//WritableRaster raster = grayScale.getRaster();
-		int width = image.getWidth();
-		int height = image.getHeight();
-		double copy[][] = new double[height][width];
-		double sum=0;
-		 //3*3 Laplacian filter (0, 1, 0), (1, -4, 1), (0, 1, 0)
-		for(int y=0;y<height;y++)
-			for(int x=0;x<width;x++) {
-				sum = (0*(returnColorValue(grayScale, width, height, x-1,y-1))) + (1*(returnColorValue(grayScale, width, height, x, y-1))) + (0*(returnColorValue(grayScale, width, height, x+1, y-1)))
-						+ (1*(returnColorValue(grayScale, width, height, x-1, y))) + (-4*(returnColorValue(grayScale, width, height, x,y))) + (1*(returnColorValue(grayScale, width, height, x+1, y))) +
-						(0*(returnColorValue(grayScale, width, height, x-1, y+1))) + (1*(returnColorValue(grayScale, width, height, x, y+1))) + (0*(returnColorValue(grayScale, width, height, x+1, y+1)));				
-				copy[y][x] = sum;
-			}
-		return copy;
-		
 	}
 	
 	private double[][] CalculateWeightMap(double[][] C, double[][] S, double[][] E, int width, int height, double weightC, double weightS, double weightE) {
